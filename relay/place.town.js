@@ -1,8 +1,8 @@
 Object.assign(globalThis, require("kolmafia"));
 
-// Trick or treat highlighting of housed. Based on 8bit-relay script.
+// Trick or treat highlighting of houses. Based on 8bit-relay script.
 
-module.exports.main = () => {
+module.exports.town_decorator = () => {
     // This will give us the current page's HTML as a big string
     // Since the relay script loads when the town does, it'll be town's HTML
     var pageText = visitUrl();
@@ -11,10 +11,10 @@ module.exports.main = () => {
     if (!pageText.includes(`<b style="color: white">Trick or Treat!</b>`)) return;
 
     // This is our CSS stuff
-    // F versions are the faded versions, with the opacity copied from the source
+    // F versions are the faded (visited) versions, with the opacity copied from the source
     const css = `<style type='text/css'>
 .litHouse {
-	border: 2px solid greenIf I;
+	border: 2px solid green;
 }
 .litHouseF {
 	border: 2px solid green;
@@ -28,7 +28,7 @@ module.exports.main = () => {
 	border: 2px solid red;
 }
 .darkHouseF {
-	border: 2px solid red;
+	border: 2px solid darkred;
 	zoom: 1;
 	filter: alpha(opacity=35);
 	opacity: 0.35;
@@ -57,18 +57,32 @@ module.exports.main = () => {
     let houseTypes = [litHouses,darkHouses,starHouse];
     
     // No lookbehinds in Rhino :(
-    //~ let lookbehind = "(?<=img class=)";
-    let start = "<img class=";
+    //~ let lookbehind = "(?<=img )";
+    let start = "<img ";
     let lookahead = "(?= src='https:\/\/[A-Za-z0-9-]{1,63}\.[A-Za-z0-9-]{1,63}\.[A-Za-z]{2,6}\/otherimages\/trickortreat\/\[IMG\])";
     
     for (let iht = 0; iht < houseTypes.length; iht++) {
         ht = houseTypes[iht];
         this_la = lookahead.replace("[IMG]",ht.imgName);
-        fullPattern = new RegExp(start+"'faded'"+this_la,"g");
-        newText = start+`'`+ht.style+"F"+`'`;
-        pageText = pageText.replaceAll(fullPattern,newText);
-    }
 
-    // Take the massive string of HTML that we've altered and use it in place of the native 8bit page
+        // Fresh are houses that haven't been opened yet.
+        freshPattern = new RegExp(start+this_la,"g");
+        newFreshText = start+`class='`+ht.style+`'`;
+        pageText = pageText.replaceAll(freshPattern,newFreshText);
+
+        // Faded are houses that have been visited.
+        fadedPattern = new RegExp(start+`class='faded'`+this_la,"g");
+        newFadedText = start+`class='`+ht.style+"F"+`'`;
+        pageText = pageText.replaceAll(fadedPattern,newFadedText);
+    }
+    
+    // Make the images a little smaller to fit the border
+    pageText = pageText.replaceAll(`width=100 height=100 alt="A House`,`width=96 height=96 alt="A House`);
+
+    // Take the massive string of HTML that we've altered and use it in place of the native town page
     write(pageText);
 };
+
+module.exports.main = () => {
+    module.exports.town_decorator();
+}
