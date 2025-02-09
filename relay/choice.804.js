@@ -4,6 +4,6 @@ const kol = require('kolmafia')
 // Actually defined in place.town.js
 const {town_decorator} = require('./place.town.js');
 
-module.exports.main = () => {
-    town_decorator();
+module.exports.main = function (pageTextEncoded) {
+    town_decorator(pageTextEncoded);
 }
