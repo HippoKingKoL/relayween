@@ -2,11 +2,16 @@ Object.assign(globalThis, require("kolmafia"));
 
 // Trick or treat highlighting of houses. Based on 8bit-relay script.
 
-module.exports.town_decorator = function (pageTextEncoded) {
-    // Decode the page URL
+module.exports.trick_or_treat_decorator = function (pageTextEncoded) {
+    
+    // Only work if we get a valid page
+    if (typeof(pageTextEncoded) == "undefined") {
+        return;
+    }
+    // Decode the page body
     var pageText = urlDecode(pageTextEncoded);
 
-    // We don't want to do anything when we visit sub-locations in the town
+    // We don't want to do anything when we visit non-Trick or Treat locations in the town
     if (!pageText.includes(`<b style="color: white">Trick or Treat!</b>`)) return;
 
     // This is our CSS stuff
@@ -83,5 +88,5 @@ module.exports.town_decorator = function (pageTextEncoded) {
 };
 
 module.exports.main = function (pageTextEncoded) {
-    module.exports.town_decorator(pageTextEncoded);
+    module.exports.trick_or_treat_decorator(pageTextEncoded);
 }
